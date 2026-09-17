@@ -56,7 +56,6 @@ export const authenticateToken = (
     req.user = payload;
     req.token = token;
 
-    // ให้ request ทำงานต่อ
     next();
   } catch (err) {
     return res.status(403).json({
