@@ -14,12 +14,35 @@ import { users } from "../db/db.ts";
 
 const router = Router();
 
-// POST /api/vXXX/auth/login
+// POST /api/v704/auth/login
 router.post("/login", (req: Request, res: Response) => {
-  try { 
+  const { username, password } = req.body;
+  const user = users.find(
+    (u: User) => u.username === username && u.password === password,
+  );
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "Username or Password is incorrect",
+    });
+  }
+
+  try {
+    const jwt_secret = process.env.JWT_SECRET || "default_secret";
+
+    const token = jwt.sign(
+      { username: user.username, userId: user.userId,},jwt_secret,{ expiresIn: "10m",},
+    );
+
+    if (!user.tokens) {
+      user.tokens = [];
+    }
+    user.tokens.push(token);
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      token: token,
     });
   } catch (err) {
     return res.status(500).json({
